@@ -1,0 +1,47 @@
+# Core dependencies for RAG Core Integration
+
+# LightRAG Core Dependencies
+lightrag>=0.0.1
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+networkx>=3.2
+numpy>=1.24.0
+tenacity>=8.2.3
+tiktoken>=0.5.2
+
+# Database Support
+psycopg2-binary>=2.9.9  # PostgreSQL
+neo4j>=5.15.0           # Neo4j graph database
+redis>=5.0.0            # Redis cache
+
+# Vector Storage
+qdrant-client>=1.7.0
+pymilvus>=2.3.0
+
+# LLM Providers
+openai>=1.12.0
+anthropic>=0.18.0
+
+# RAG-Anything Dependencies
+# (See raganything_pyproject.toml for full list)
+
+# Document Processing
+magic-pdf[full]>=0.7.0  # MinerU for PDF parsing
+pillow>=10.0.0          # Image processing
+opencv-python>=4.8.0    # Computer vision
+
+# API and Server
+python-multipart>=0.0.6
+aiofiles>=23.2.1
+
+# Utilities
+tqdm>=4.66.0
+loguru>=0.7.0
+
+# Optional: For development
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+black>=23.0.0
+isort>=5.12.0
