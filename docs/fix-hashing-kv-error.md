@@ -10,7 +10,19 @@ ERROR: Error generating table description: 'hashing_kv'
 
 ## 错误根源
 
-**问题代码位置**: `lightrag/llm/openai.py:499`
+### 调用链分析
+
+```
+RAG-Anything.modal_caption_func()
+    ↓ (没有传递 hashing_kv)
+LightRAG.openai_complete()  ← lightrag/llm/openai.py:487
+    ↓ Line 499: model_name = kwargs["hashing_kv"].global_config["llm_model_name"]
+    ❌ KeyError: 'hashing_kv'
+```
+
+### 问题代码位置
+
+**lightrag/llm/openai.py:487-506**:
 
 ```python
 async def openai_complete(
@@ -19,16 +31,44 @@ async def openai_complete(
     history_messages=None,
     keyword_extraction=False,
     **kwargs,
-):
-    # ...
+) -> Union[str, AsyncIterator[str]]:
+    if history_messages is None:
+        history_messages = []
+    keyword_extraction = kwargs.pop("keyword_extraction", None)
+    if keyword_extraction:
+        kwargs["response_format"] = "json"
+
+    # ❌ 第 499 行：这里期望 hashing_kv 存在
     model_name = kwargs["hashing_kv"].global_config["llm_model_name"]
-    # ❌ KeyError: 'hashing_kv' - 缺少这个参数！
+
+    # 传递给下层函数（会移除 hashing_kv）
+    return await openai_complete_if_cache(
+        model_name,  # ← 已从 hashing_kv 提取模型名
+        prompt,
+        system_prompt=system_prompt,
+        history_messages=history_messages,
+        **kwargs,  # ← 包含 hashing_kv，会在下层被移除
+    )
 ```
 
-**问题原因**:
-- LightRAG 的 LLM 函数 (`openai_complete`) **期望** 在 `kwargs` 中有 `hashing_kv` 参数
-- RAG-Anything 在调用 LLM 函数时 **没有传递** 这个参数
-- 导致 KeyError 异常
+**lightrag/llm/openai.py:179-180** (下层函数):
+
+```python
+async def openai_complete_if_cache(..., **kwargs):
+    # 移除特殊参数（此时已提取完模型名）
+    kwargs.pop("hashing_kv", None)  # ← 移除，不传给 OpenAI API
+    kwargs.pop("keyword_extraction", None)
+
+    # 调用 OpenAI API (不包含 hashing_kv)
+    response = await client.chat.completions.create(**kwargs)
+```
+
+### 问题原因
+
+1. **`openai_complete()` 需要 `hashing_kv`** 来获取模型名称（第 499 行）
+2. **RAG-Anything 调用时没有传递** `hashing_kv` 参数
+3. **导致 KeyError** 在提取模型名之前就发生了
+4. `openai_complete_if_cache()` 虽然会移除 `hashing_kv`，但那是**在成功获取模型名之后**
 
 ## 修复方案
 
