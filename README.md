@@ -13,16 +13,25 @@ This repository contains the core code from two complementary RAG systems:
 
 ```
 rag-core-integration/
-├── lightrag/              # LightRAG core library
+├── lightrag/              # LightRAG core library (Backend)
 │   ├── lightrag.py        # Main RAG class
 │   ├── operate.py         # Core operations
 │   ├── kg/                # Knowledge graph storage
 │   ├── llm/               # LLM integrations
+│   ├── api/               # FastAPI server
 │   └── utils/             # Utilities
+├── lightrag_webui/        # LightRAG WebUI (Frontend)
+│   ├── src/               # React + TypeScript source
+│   │   ├── components/    # UI components
+│   │   ├── features/      # Feature modules
+│   │   ├── api/           # API client
+│   │   └── locales/       # i18n translations
+│   ├── public/            # Static assets
+│   └── package.json       # Node dependencies
 ├── raganything/           # RAG-Anything core library
 │   ├── api/               # API server
-│   ├── rag/               # RAG components
 │   ├── parser/            # Document parsers
+│   ├── modalprocessors.py # Multimodal processors
 │   └── utils/             # Utilities
 ├── docs/                  # Documentation
 │   ├── LightRAG_README.md
@@ -49,9 +58,15 @@ rag-core-integration/
 ## 🛠️ Installation
 
 ### Prerequisites
+
+**Backend:**
 - Python 3.10+
 - PostgreSQL (for LightRAG storage)
 - Neo4j (optional, for graph storage)
+
+**Frontend:**
+- Node.js 18+
+- npm or bun
 
 ### Basic Setup
 
@@ -59,27 +74,43 @@ rag-core-integration/
 # Clone the repository
 git clone https://github.com/blingtien/rag-core-integration.git
 cd rag-core-integration
+```
 
+### Backend Setup (LightRAG)
+
+```bash
 # Create virtual environment
 python3 -m venv venv
 source venv/bin/activate  # Linux/Mac
 # venv\Scripts\activate  # Windows
 
-# Install dependencies
-# See individual component pyproject.toml files for specific requirements
-pip install -r requirements.txt  # If available
-```
-
-### LightRAG Setup
-
-```bash
 # Install LightRAG dependencies
-cd lightrag
 pip install -e ".[api]"
 
 # Configure environment
 cp env.example .env
 # Edit .env with your configuration
+```
+
+### Frontend Setup (LightRAG WebUI)
+
+```bash
+# Navigate to frontend directory
+cd lightrag_webui
+
+# Install dependencies
+npm install
+# or using bun: bun install
+
+# Configure environment
+cp env.local.sample .env.local
+# Edit .env.local with your API endpoint
+
+# Development mode
+npm run dev
+
+# Production build
+npm run build
 ```
 
 ### RAG-Anything Setup
